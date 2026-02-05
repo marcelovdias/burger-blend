@@ -1,0 +1,7 @@
+{
+  "name": "Burger Blend Master",
+  "description": "Uma calculadora profissional de blend de hambúrguer baseada em receitas artesanais, com extração inteligente de dados via IA.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
