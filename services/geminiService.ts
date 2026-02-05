@@ -61,28 +61,42 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "clássicos"): Promise<SuggestedBlend[]> => {
-  const prompt = `Você é um especialista em hambúrgueres. Pesquise o blend real ou fiel para: "${query}".
-  Retorne um array JSON com 6 a 10 objetos.
-  Cada objeto deve ter:
-  - name: Nome do blend ou restaurante.
-  - description: Breve explicação técnica.
-  - fatRatio: Número entre 0.15 e 0.30.
-  - meats: Array de objetos {name: string, ratio: number} onde a soma dos ratios é 1.
+  const prompt = `Você é um especialista mundial em hambúrgueres artesanais. Pesquise blends reais e reconhecidos para a categoria: "${query}".
   
-  Retorne APENAS o JSON puro, sem explicações.`;
+  IMPORTANTE: Retorne APENAS um array JSON válido com 8 a 10 objetos, sem texto adicional.
+  
+  Cada objeto DEVE ter exatamente esta estrutura:
+  {
+    "name": "Nome do blend ou restaurante famoso",
+    "description": "Breve explicação técnica do blend",
+    "fatRatio": 0.20,
+    "meats": [{"name": "Corte de carne", "ratio": 0.5}, {"name": "Outro corte", "ratio": 0.5}]
+  }
+  
+  Exemplos de blends conhecidos: Shake Shack, In-N-Out, Five Guys, Pat LaFrieda, Z Deli, Madero, etc.
+  Retorne APENAS o JSON, começando com [ e terminando com ].`;
 
   try {
-    if (!import.meta.env.VITE_API_KEY) throw new Error("API Key missing");
+    if (!import.meta.env.VITE_API_KEY) {
+      console.error("API Key não configurada!");
+      throw new Error("API Key missing");
+    }
+
+    console.log("Buscando blends para:", query);
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
       },
     });
 
+    console.log("Resposta bruta:", response.text);
+
     const text = cleanJsonString(response.text || "[]");
+    console.log("JSON limpo:", text);
+
     const blends: SuggestedBlend[] = JSON.parse(text);
 
     const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
@@ -92,11 +106,12 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
       }))
       .filter((c: any) => c.uri) || [];
 
+    console.log("Blends encontrados:", blends.length);
     return blends.map(b => ({ ...b, citations }));
 
   } catch (error) {
-    console.error("Search failed:", error);
-    // Fallback para não quebrar a UI caso a busca falhe
+    console.error("Erro na busca de blends:", error);
     return [];
   }
 };
+
