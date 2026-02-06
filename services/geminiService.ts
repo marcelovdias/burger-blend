@@ -16,7 +16,7 @@ const cleanJsonString = (text: string) => {
 
 export const extractRecipeFromImage = async (base64Image: string): Promise<Recipe> => {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     contents: [
       {
         parts: [
@@ -75,7 +75,7 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
     if (!import.meta.env.VITE_API_KEY) throw new Error("API Key missing");
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
