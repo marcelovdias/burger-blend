@@ -50,7 +50,7 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 export const searchProfessionalBlends = async (query: string = "clássicos"): Promise<SuggestedBlend[]> => {
   console.log("🚀 Iniciando busca por:", query);
 
-  const prompt = `Você é um especialista em hambúrgueres. Liste 6 a 10 receitas reais de blends de hambúrguer profissionais para: "${query}".
+  const prompt = `Você é um especialista em hambúrgueres. Liste exatamente 10 receitas reais de blends de hambúrguer profissionais para: "${query}".
   
   Retorne APENAS um array JSON neste formato exato:
   [
