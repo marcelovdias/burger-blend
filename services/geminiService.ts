@@ -48,6 +48,8 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "clássicos"): Promise<SuggestedBlend[]> => {
+  console.log("🚀 Iniciando busca por:", query);
+
   const prompt = `Você é um especialista em hambúrgueres. Liste 6 a 10 receitas reais de blends de hambúrguer profissionais para: "${query}".
   
   Retorne APENAS um array JSON neste formato exato:
@@ -69,8 +71,12 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
   - Retorne APENAS o JSON, sem texto adicional`;
 
   try {
-    if (!API_KEY) throw new Error("API Key missing");
+    if (!API_KEY) {
+      console.error("❌ API Key não encontrada! Verifique o .env ou as configurações do Netlify.");
+      throw new Error("API Key missing");
+    }
 
+    console.log("📡 Enviando requisição para Gemini API...");
     const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -85,19 +91,28 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
       })
     });
 
+    console.log("📥 Status da resposta:", response.status, response.statusText);
+
     if (!response.ok) {
-      console.error("API Error:", response.status, response.statusText);
-      return [];
+      const errorText = await response.text();
+      console.error("❌ Erro detalhado da API:", errorText);
+      throw new Error(`API Error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("📦 Dados brutos recebidos:", data);
+
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-    const blends: SuggestedBlend[] = JSON.parse(cleanJsonString(text));
+    console.log("📝 Texto extraído:", text);
+
+    const cleanedText = cleanJsonString(text);
+    const blends: SuggestedBlend[] = JSON.parse(cleanedText);
+    console.log("✅ Blends parseados com sucesso:", blends);
 
     return blends;
 
   } catch (error) {
-    console.error("Search failed:", error);
+    console.error("🔥 Falha crítica na busca:", error);
     return [];
   }
 };
