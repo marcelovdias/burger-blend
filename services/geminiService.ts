@@ -18,7 +18,7 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+  const response = await fetch(`${BASE_URL}/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
