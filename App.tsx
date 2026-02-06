@@ -138,7 +138,7 @@ const App: React.FC = () => {
     text += `💰 *ESTIMATIVA DE CUSTO:*\n`;
     text += `Total: ${formatCurrency(costResults.total)}\n`;
     text += `Por Unidade: ${formatCurrency(costResults.perUnit)}`;
-
+    
     navigator.clipboard.writeText(text);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
@@ -186,8 +186,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 pb-24">
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body { background: white !important; color: black !important; }
           header, footer, button, input[type="range"], .no-print { display: none !important; }
@@ -295,6 +294,16 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
+=======
+      <div className="print-only print-header">
+        <div>
+          <h1 className="print-title">Burger Master Pro</h1>
+          <p className="text-xs font-bold uppercase tracking-widest">Relatório Técnico de Produção</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-black">{new Date().toLocaleDateString('pt-BR')}</p>
+          <p className="text-[10px] uppercase font-bold text-stone-400">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
         </div>
       </div>
 
@@ -354,7 +363,11 @@ const App: React.FC = () => {
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
+<<<<<<< HEAD
             className={`flex overflow-x-auto py-4 gap-3 no-scrollbar snap-x snap-mandatory select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+=======
+            className={`flex overflow-x-auto py-4 gap-3 no-scrollbar snap-x snap-mandatory px-2 -mx-2 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
           >
             {BURGER_SIZES.map((size) => (
               <button
@@ -480,12 +493,21 @@ const App: React.FC = () => {
 
         {showEditor && <MeatEditor recipe={recipe} setRecipe={setRecipe} onClose={() => setShowEditor(false)} />}
         {showSuggestions && (
+<<<<<<< HEAD
           <Suggestions
             suggestions={suggestions}
             apply={applySuggestion}
             onClose={() => setShowSuggestions(false)}
             isSearching={isSearching}
             loadSuggestions={loadSuggestions}
+=======
+          <Suggestions 
+            suggestions={suggestions} 
+            apply={applySuggestion} 
+            onClose={() => setShowSuggestions(false)} 
+            isSearching={isSearching} 
+            loadSuggestions={loadSuggestions} 
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
             currentCategory={currentCategory}
             customSearchQuery={customSearchQuery}
             setCustomSearchQuery={setCustomSearchQuery}
@@ -597,6 +619,7 @@ const MeatEditor = ({ recipe, setRecipe, onClose }: any) => {
   };
 
   return (
+<<<<<<< HEAD
     <PanelBase title="Customizar Carnes" icon="fas fa-pen" onClose={onClose} color="text-[#ea580c]" maxWidth="max-w-sm">
       <div className="space-y-5">
         <div className="space-y-3">
@@ -625,6 +648,36 @@ const MeatEditor = ({ recipe, setRecipe, onClose }: any) => {
         <div className="grid grid-cols-2 gap-3 pt-5 border-t border-stone-100">
           <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-3.5 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-stone-200 transition-colors">Cancelar</button>
           <button onClick={handleSave} className="w-full bg-[#1c1917] text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-stone-800 transition-colors shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5 transform">Salvar</button>
+=======
+    <PanelBase title="Customizar Carnes" icon="fas fa-pen" onClose={onClose} color="text-[#ea580c]" maxWidth="max-w-md">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          {localMeats.map((m: any, idx: number) => (
+            <div key={idx} className="flex gap-2 items-center bg-stone-50 p-3 rounded-xl border border-stone-100">
+              <div className="flex-1">
+                <label className="text-[7px] font-black text-stone-500 uppercase mb-0.5 block">Corte</label>
+                <input type="text" value={m.name} onChange={(e) => updateMeat(idx, 'name', e.target.value)} className="w-full bg-transparent font-black text-xs text-stone-900 outline-none" />
+              </div>
+              <div className="w-14 text-right">
+                <label className="text-[7px] font-black text-stone-500 uppercase mb-0.5 block">%</label>
+                <div className="flex items-center justify-end gap-0.5">
+                  <input type="number" step="1" value={Math.round(m.ratio * 100)} onChange={(e) => updateMeat(idx, 'ratio', parseFloat(e.target.value) / 100)} className="w-7 bg-transparent font-black text-xs text-stone-900 text-right outline-none" />
+                  <span className="text-[8px] font-black text-stone-500">%</span>
+                </div>
+              </div>
+              <button onClick={() => removeMeat(idx)} className="w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                <i className="fas fa-trash-alt text-[10px]"></i>
+              </button>
+            </div>
+          ))}
+          <button onClick={addMeat} className="w-full py-3 border-2 border-dashed border-stone-200 text-stone-400 rounded-xl font-black text-[8px] uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all">
+            <i className="fas fa-plus mr-1.5"></i> Adicionar Carne
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 pt-4 border-t border-stone-50">
+          <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-3 rounded-lg font-black uppercase tracking-widest text-[8px] hover:bg-stone-200 transition-colors">Cancelar</button>
+          <button onClick={handleSave} className="w-full bg-[#1c1917] text-white py-3 rounded-lg font-black uppercase tracking-widest text-[8px] hover:bg-stone-800 transition-colors shadow-lg shadow-stone-200">Salvar</button>
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
         </div>
       </div>
     </PanelBase>
@@ -639,6 +692,7 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
 
   return (
     <PanelBase title="Gestão & Lucro" icon="fas fa-calculator-dollar" onClose={onClose} color="text-emerald-600" maxWidth="max-w-md">
+<<<<<<< HEAD
       <div className="space-y-6">
         <div className="space-y-3">
           <p className="text-[10px] font-black text-stone-500 uppercase tracking-widest italic">Preços de Compra (R$/kg)</p>
@@ -656,12 +710,32 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-stone-500">R$</span>
                   <input type="text" inputMode="decimal" defaultValue={prices[m.name]?.toString().replace('.', ',')} onBlur={(e) => updatePrice(m.name, e.target.value)} className="w-20 bg-white border border-stone-200 p-2 rounded-lg font-black text-center text-sm outline-none focus:border-emerald-500 transition-all" />
+=======
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-[8px] font-black text-stone-500 uppercase tracking-widest italic">Preços de Compra (R$/kg)</p>
+          <div className="grid grid-cols-1 gap-1.5">
+            <div className="bg-stone-50 p-2.5 rounded-xl border border-stone-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+              <span className="text-[10px] font-black uppercase text-stone-900 italic">Gordura Animal</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8px] font-black text-stone-500">R$</span>
+                <input type="text" inputMode="decimal" defaultValue={prices['Gordura Animal']?.toString().replace('.', ',')} onBlur={(e) => updatePrice('Gordura Animal', e.target.value)} className="w-16 bg-white border border-stone-200 p-1.5 rounded-lg font-black text-center text-xs outline-none focus:border-emerald-500 transition-all" />
+              </div>
+            </div>
+            {results.meats.map((m: any, idx: number) => (
+              <div key={idx} className="bg-stone-50 p-2.5 rounded-xl border border-stone-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-black uppercase text-stone-900 italic">{m.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[8px] font-black text-stone-500">R$</span>
+                  <input type="text" inputMode="decimal" defaultValue={prices[m.name]?.toString().replace('.', ',')} onBlur={(e) => updatePrice(m.name, e.target.value)} className="w-16 bg-white border border-stone-200 p-1.5 rounded-lg font-black text-center text-xs outline-none focus:border-emerald-500 transition-all" />
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+<<<<<<< HEAD
         <div className="space-y-3 pt-4 border-t border-stone-50">
           <p className="text-[10px] font-black text-stone-500 uppercase tracking-widest italic">Simulador de Venda (R$/un.)</p>
           <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center justify-between shadow-sm">
@@ -672,10 +746,23 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
                 const val = parseFloat(e.target.value.replace(',', '.'));
                 setSellingPrice(isNaN(val) ? 0 : val);
               }} className="w-24 bg-white border border-emerald-200 p-2.5 rounded-lg font-black text-center text-lg text-emerald-600 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all" />
+=======
+        <div className="space-y-2 pt-3 border-t border-stone-50">
+          <p className="text-[8px] font-black text-stone-500 uppercase tracking-widest italic">Simulador de Venda (R$/un.)</p>
+          <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase text-emerald-900 italic">Preço de Venda</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[8px] font-black text-emerald-500">R$</span>
+              <input type="text" inputMode="decimal" defaultValue={sellingPrice.toString().replace('.', ',')} onBlur={(e) => {
+                const val = parseFloat(e.target.value.replace(',', '.'));
+                setSellingPrice(isNaN(val) ? 0 : val);
+              }} className="w-20 bg-white border border-emerald-200 p-2 rounded-lg font-black text-center text-sm text-emerald-600 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all" />
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
             </div>
           </div>
         </div>
 
+<<<<<<< HEAD
         <div className="bg-[#1c1917] text-white p-5 rounded-2xl space-y-4 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-8 -mt-8 blur-3xl"></div>
           <div className="flex justify-between items-center border-b border-white/10 pb-3">
@@ -691,6 +778,23 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
           </div>
         </div>
         <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-stone-200 transition-all">Fechar</button>
+=======
+        <div className="bg-[#1c1917] text-white p-4 rounded-2xl space-y-3 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full -mr-8 -mt-8 blur-2xl"></div>
+          <div className="flex justify-between items-center border-b border-white/10 pb-2">
+            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Custo Unitário</span>
+            <span className="text-lg font-black tabular-nums">{costResults.perUnit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400 block mb-0.5">Lucro Bruto / un.</span>
+              <p className="text-[7px] text-white/30 font-bold uppercase">Margem: {costResults.margin.toFixed(1)}%</p>
+            </div>
+            <span className="text-2xl font-black text-emerald-400 tabular-nums tracking-tighter">{costResults.profit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+          </div>
+        </div>
+        <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-3 rounded-lg font-black uppercase tracking-widest text-[8px] hover:bg-stone-200 transition-all">Fechar</button>
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
       </div>
     </PanelBase>
   );
@@ -781,8 +885,11 @@ const Manual = ({ onClose }: any) => (
         <p><strong>Gordura:</strong> Use Peito ou Costela. Evite gordura de rim, que derrete muito rápido e altera o sabor.</p>
         <p><strong>Temperatura:</strong> Moer carne gelada (próximo a 0°C) evita que a gordura se separe das fibras, mantendo a emulsão.</p>
         <p><strong>Manuseio:</strong> Molde rapidamente. Quanto menos contato manual, menos calor você transfere para a gordura.</p>
+<<<<<<< HEAD
         <p><strong>Descanso:</strong> A carne precisa relaxar após a moagem. Deixe os burgers moldados na geladeira por 30m antes de ir para o fogo.</p>
         <p><strong>Sal:</strong> Jamais misture sal no blend antes de moldar (vamonos virar quibe!). Salgue apenas por fora, segundos antes de entrar na chapa.</p>
+=======
+>>>>>>> 99cc7612564552d860713ea580ef77e6721f0712
       </div>
     </div>
   </PanelBase>
