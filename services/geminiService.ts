@@ -3,10 +3,27 @@ import { Recipe, SuggestedBlend } from "../types";
 const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
+// Função utilitária para limpar a resposta e garantir JSON válido
 const cleanJsonString = (text: string) => {
+  // Remove marcadores de markdown comuns (```json, ```)
   let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-  const jsonStart = cleaned.indexOf('[');
-  const jsonEnd = cleaned.lastIndexOf(']');
+  
+  // Tenta encontrar o início e fim do JSON (objeto ou array) para ignorar textos extras
+  const jsonStartBrace = cleaned.indexOf('{');
+  const jsonStartBracket = cleaned.indexOf('[');
+  
+  // Define onde começa o JSON (seja array ou objeto)
+  let jsonStart = -1;
+  if (jsonStartBrace !== -1 && jsonStartBracket !== -1) {
+    jsonStart = Math.min(jsonStartBrace, jsonStartBracket);
+  } else if (jsonStartBrace !== -1) {
+    jsonStart = jsonStartBrace;
+  } else {
+    jsonStart = jsonStartBracket;
+  }
+
+  const jsonEnd = cleaned.lastIndexOf(jsonStartBrace === jsonStart ? '}' : ']');
+
   if (jsonStart !== -1 && jsonEnd !== -1) {
     cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
   }
@@ -16,9 +33,11 @@ const cleanJsonString = (text: string) => {
 export const extractRecipeFromImage = async (base64Image: string): Promise<Recipe> => {
   if (!API_KEY) throw new Error("API Key missing");
 
+  // Remove o header do base64 se existir (data:image/jpeg;base64,...)
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  const response = await fetch(`${BASE_URL}/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
+  // ATUALIZADO: Usando gemini-2.5-flash
+  const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -47,46 +66,57 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   return JSON.parse(cleanJsonString(text));
 };
 
-export const searchProfessionalBlends = async (query: string = "clássicos"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca por:", query);
+export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
+  console.log("🚀 Iniciando busca REAL na web por:", query);
 
-  const prompt = `Você é um especialista em hambúrgueres. Liste exatamente 10 receitas reais de blends de hambúrguer profissionais para: "${query}".
+  // Prompt ajustado para buscar tendências reais e trazer mais resultados
+  const prompt = `Atue como um caçador de tendências gastronômicas e especialista em hambúrgueres. 
+  Pesquise na web por "melhores blends de hambúrguer ${query}", "burger blend trends 2024 2025" e receitas de hamburguerias famosas.
   
-  Retorne APENAS um array JSON neste formato exato:
+  Liste as 15 receitas mais relevantes encontradas (tendências atuais ou clássicos famosos).
+  Para cada uma, estime a composição técnica do blend baseada nas descrições encontradas na pesquisa.
+  
+  Retorne APENAS um array JSON puro. Não use Markdown. O formato deve ser EXATAMENTE este:
   [
     {
-      "name": "Nome do Blend ou Restaurante",
-      "description": "Breve descrição técnica",
+      "name": "Nome do Burger ou Restaurante",
+      "description": "Breve descrição (ex: 'Tendência Smash de NY' ou 'Clássico do restaurante X')",
       "fatRatio": 0.20,
       "meats": [
-        {"name": "Nome da Carne", "ratio": 0.5},
-        {"name": "Outra Carne", "ratio": 0.5}
+        {"name": "Peito", "ratio": 0.5},
+        {"name": "Acém", "ratio": 0.5}
       ]
     }
   ]
   
-  IMPORTANTE: 
-  - fatRatio entre 0.15 e 0.30
-  - soma de todos os ratios em meats deve ser 1
-  - Retorne APENAS o JSON, sem texto adicional`;
+  REGRAS:
+  1. "fatRatio" deve ser um número entre 0.15 e 0.30.
+  2. A soma dos "ratio" dentro de "meats" deve ser SEMPRE 1.0 (ex: 0.5 + 0.5 ou 0.33 + 0.33 + 0.34).
+  3. SEM explicações antes ou depois do JSON. Apenas o array cru.`;
 
   try {
     if (!API_KEY) {
-      console.error("❌ API Key não encontrada! Verifique o .env ou as configurações do Netlify.");
+      console.error("❌ API Key não encontrada! Verifique o .env.");
       throw new Error("API Key missing");
     }
 
-    console.log("📡 Enviando requisição para Gemini API...");
-    const response = await fetch(`${BASE_URL}/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
+    console.log("📡 Enviando requisição com Google Search...");
+    
+    // ATUALIZADO: Usando gemini-2.5-flash com ferramenta de busca
+    const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
+        // ATIVANDO O GOOGLE SEARCH
+        tools: [
+          { google_search: {} }
+        ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.5, // Equilíbrio entre criatividade e precisão dos dados buscados
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192, // Limite alto para caber a lista de 15+ itens
         }
       })
     });
@@ -100,19 +130,21 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
     }
 
     const data = await response.json();
-    console.log("📦 Dados brutos recebidos:", data);
-
+    
+    // Extração segura do texto
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-    console.log("📝 Texto extraído:", text);
+    console.log("📝 Texto extraído (início):", text.substring(0, 100) + "...");
 
     const cleanedText = cleanJsonString(text);
     const blends: SuggestedBlend[] = JSON.parse(cleanedText);
-    console.log("✅ Blends parseados com sucesso:", blends);
+    
+    console.log(`✅ ${blends.length} blends encontrados e processados.`);
 
     return blends;
 
   } catch (error) {
-    console.error("🔥 Falha crítica na busca:", error);
+    console.error("🔥 Falha na busca ou no processamento do JSON:", error);
+    // Retorna array vazio para não quebrar a UI
     return [];
   }
 };
