@@ -1,8 +1,7 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
 import { Recipe, SuggestedBlend } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+const API_KEY = import.meta.env.VITE_API_KEY;
+const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const cleanJsonString = (text: string) => {
   let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -15,88 +14,90 @@ const cleanJsonString = (text: string) => {
 };
 
 export const extractRecipeFromImage = async (base64Image: string): Promise<Recipe> => {
-  const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash-latest",
-    contents: [
-      {
+  if (!API_KEY) throw new Error("API Key missing");
+
+  const imageData = base64Image.split(',')[1] || base64Image;
+
+  const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
         parts: [
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: base64Image.split(',')[1] || base64Image
-            }
-          },
-          {
-            text: "Analise esta imagem de receita de hambúrguer. Extraia o nome, o percentual de gordura ideal, a lista de carnes utilizadas e suas proporções relativas entre si, além do peso por unidade. Retorne apenas JSON."
-          }
+          { inline_data: { mime_type: "image/jpeg", data: imageData } },
+          { text: "Analise esta imagem de receita de hambúrguer. Extraia o nome, o percentual de gordura ideal (0-1), a lista de carnes utilizadas e suas proporções relativas entre si (soma=1), e o peso por unidade em gramas. Retorne APENAS JSON no formato: {\"name\": string, \"fatRatio\": number, \"meats\": [{\"name\": string, \"ratio\": number}], \"unitWeight\": number, \"grindMethod\": string}" }
         ]
+      }],
+      generationConfig: {
+        temperature: 0.4,
+        topK: 32,
+        topP: 1,
+        maxOutputTokens: 2048,
       }
-    ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING },
-          fatRatio: { type: Type.NUMBER, description: "Percentual de gordura (0-1)" },
-          meats: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                ratio: { type: Type.NUMBER, description: "Proporção relativa entre as carnes (soma deve ser 1)" }
-              }
-            }
-          },
-          unitWeight: { type: Type.NUMBER },
-          grindMethod: { type: Type.STRING }
-        },
-        required: ["name", "fatRatio", "meats", "unitWeight"]
-      }
-    }
+    })
   });
 
-  return JSON.parse(cleanJsonString(response.text || "{}"));
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+
+  return JSON.parse(cleanJsonString(text));
 };
 
 export const searchProfessionalBlends = async (query: string = "clássicos"): Promise<SuggestedBlend[]> => {
-  const prompt = `Você é um especialista em hambúrgueres. Pesquise o blend real ou fiel para: "${query}".
-  Retorne um array JSON com 6 a 10 objetos.
-  Cada objeto deve ter:
-  - name: Nome do blend ou restaurante.
-  - description: Breve explicação técnica.
-  - fatRatio: Número entre 0.15 e 0.30.
-  - meats: Array de objetos {name: string, ratio: number} onde a soma dos ratios é 1.
+  const prompt = `Você é um especialista em hambúrgueres. Liste 6 a 10 receitas reais de blends de hambúrguer profissionais para: "${query}".
   
-  Retorne APENAS o JSON puro, sem explicações.`;
+  Retorne APENAS um array JSON neste formato exato:
+  [
+    {
+      "name": "Nome do Blend ou Restaurante",
+      "description": "Breve descrição técnica",
+      "fatRatio": 0.20,
+      "meats": [
+        {"name": "Nome da Carne", "ratio": 0.5},
+        {"name": "Outra Carne", "ratio": 0.5}
+      ]
+    }
+  ]
+  
+  IMPORTANTE: 
+  - fatRatio entre 0.15 e 0.30
+  - soma de todos os ratios em meats deve ser 1
+  - Retorne APENAS o JSON, sem texto adicional`;
 
   try {
-    if (!import.meta.env.VITE_API_KEY) throw new Error("API Key missing");
+    if (!API_KEY) throw new Error("API Key missing");
 
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash-latest",
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+    const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 4096,
+        }
+      })
     });
 
-    const text = cleanJsonString(response.text || "[]");
-    const blends: SuggestedBlend[] = JSON.parse(text);
+    if (!response.ok) {
+      console.error("API Error:", response.status, response.statusText);
+      return [];
+    }
 
-    const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-      ?.map((chunk: any) => ({
-        title: chunk.web?.title || "Referência Técnica",
-        uri: chunk.web?.uri || ""
-      }))
-      .filter((c: any) => c.uri) || [];
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    const blends: SuggestedBlend[] = JSON.parse(cleanJsonString(text));
 
-    return blends.map(b => ({ ...b, citations }));
+    return blends;
 
   } catch (error) {
     console.error("Search failed:", error);
-    // Fallback para não quebrar a UI caso a busca falhe
     return [];
   }
 };
