@@ -77,34 +77,34 @@ const MeatEditor = ({ recipe, setRecipe, onClose }: any) => {
   };
 
   return (
-    <PanelBase title="Customizar Carnes" icon="fas fa-pen" onClose={onClose} color="text-[#ea580c]" maxWidth="max-w-sm">
-      <div className="space-y-5">
-        <div className="space-y-3">
+    <PanelBase title="Customizar Carnes" icon="fas fa-pen" onClose={onClose} color="text-[#ea580c]" maxWidth="max-w-[340px]">
+      <div className="space-y-4">
+        <div className="space-y-2">
           {localMeats.map((m: any, idx: number) => (
-            <div key={idx} className="flex gap-3 items-center bg-stone-50 p-3 rounded-xl border border-stone-100 shadow-sm">
+            <div key={idx} className="flex gap-2 items-end bg-stone-50 p-2 rounded-lg border border-stone-100">
               <div className="flex-1 min-w-0">
-                <label className="text-[9px] font-black text-stone-500 uppercase mb-1 block tracking-wider">Corte</label>
-                <input type="text" value={m.name} onChange={(e) => updateMeat(idx, 'name', e.target.value)} className="w-full bg-white border border-stone-200 rounded-lg p-2 font-bold text-sm text-stone-800 outline-none focus:border-[#ea580c] transition-all" />
+                <label className="text-[8px] font-black text-stone-400 uppercase mb-0.5 block tracking-wider">Corte</label>
+                <input type="text" value={m.name} onChange={(e) => updateMeat(idx, 'name', e.target.value)} className="w-full bg-white border border-stone-200 rounded-md p-1.5 font-bold text-xs text-stone-800 outline-none focus:border-[#ea580c] transition-all" />
               </div>
-              <div className="w-20 text-right flex-shrink-0">
-                <label className="text-[9px] font-black text-stone-500 uppercase mb-1 block tracking-wider">%</label>
-                <div className="flex items-center bg-white border border-stone-200 rounded-lg p-1.5 focus-within:border-[#ea580c] transition-all">
-                  <input type="number" step="1" value={Math.round(m.ratio * 100)} onChange={(e) => updateMeat(idx, 'ratio', parseFloat(e.target.value) / 100)} className="w-full bg-transparent font-bold text-sm text-stone-900 text-center outline-none" />
-                  <span className="text-[10px] font-bold text-stone-400 select-none">%</span>
+              <div className="w-[70px] flex-shrink-0">
+                <label className="text-[8px] font-black text-stone-400 uppercase mb-0.5 block tracking-wider text-center">%</label>
+                <div className="flex items-center bg-white border border-stone-200 rounded-md p-1 focus-within:border-[#ea580c] transition-all h-[30px]">
+                  <input type="number" step="1" value={Math.round(m.ratio * 100)} onChange={(e) => updateMeat(idx, 'ratio', parseFloat(e.target.value) / 100)} className="w-full bg-transparent font-bold text-xs text-stone-900 text-center outline-none" />
+                  <span className="text-[9px] font-bold text-stone-400 select-none pr-1">%</span>
                 </div>
               </div>
-              <button onClick={() => removeMeat(idx)} className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-all mt-3">
-                <i className="fas fa-trash-alt text-sm"></i>
+              <button onClick={() => removeMeat(idx)} className="w-[30px] h-[30px] flex-shrink-0 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 rounded-md transition-all">
+                <i className="fas fa-trash-alt text-xs"></i>
               </button>
             </div>
           ))}
-          <button onClick={addMeat} className="w-full py-4 border-2 border-dashed border-stone-300 text-stone-400 rounded-xl font-bold text-[10px] uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all hover:bg-orange-50/50">
-            <i className="fas fa-plus mr-1.5"></i> Adicionar Carne
+          <button onClick={addMeat} className="w-full py-3 border-2 border-dashed border-stone-300 text-stone-400 rounded-lg font-bold text-[9px] uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all hover:bg-orange-50/50">
+            <i className="fas fa-plus mr-1"></i> Adicionar
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3 pt-5 border-t border-stone-100">
-          <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-3.5 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-stone-200 transition-colors">Cancelar</button>
-          <button onClick={handleSave} className="w-full bg-[#1c1917] text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-stone-800 transition-colors shadow-lg hover:shadow-xl translate-y-0 hover:-translate-y-0.5 transform">Salvar</button>
+        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-stone-100">
+          <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-2.5 rounded-lg font-bold uppercase tracking-widest text-[8px] hover:bg-stone-200 transition-colors">Cancelar</button>
+          <button onClick={handleSave} className="w-full bg-[#1c1917] text-white py-2.5 rounded-lg font-bold uppercase tracking-widest text-[8px] hover:bg-stone-800 transition-colors shadow-lg">Salvar</button>
         </div>
       </div>
 
@@ -119,24 +119,24 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
   };
 
   return (
-    <PanelBase title="Gestão & Lucro" icon="fas fa-calculator-dollar" onClose={onClose} color="text-emerald-600" maxWidth="max-w-md">
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <p className="text-[10px] font-black text-stone-500 uppercase tracking-widest italic">Preços de Compra (R$/kg)</p>
-          <div className="grid grid-cols-1 gap-2">
-            <div className="bg-stone-50 p-3 rounded-xl border border-stone-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
-              <span className="text-xs font-black uppercase text-stone-900 italic">Gordura Animal</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-stone-500">R$</span>
-                <input type="text" inputMode="decimal" defaultValue={prices['Gordura Animal']?.toString().replace('.', ',')} onBlur={(e) => updatePrice('Gordura Animal', e.target.value)} className="w-20 bg-white border border-stone-200 p-2 rounded-lg font-black text-center text-sm outline-none focus:border-emerald-500 transition-all" />
+    <PanelBase title="Gestão & Lucro" icon="fas fa-calculator-dollar" onClose={onClose} color="text-emerald-600" maxWidth="max-w-sm">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-[9px] font-black text-stone-500 uppercase tracking-widest italic">Custos (R$/kg)</p>
+          <div className="grid grid-cols-1 gap-1.5">
+            <div className="bg-stone-50 p-2 rounded-lg border border-stone-100 flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase text-stone-900 italic">Gordura</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-black text-stone-400">R$</span>
+                <input type="text" inputMode="decimal" defaultValue={prices['Gordura Animal']?.toString().replace('.', ',')} onBlur={(e) => updatePrice('Gordura Animal', e.target.value)} className="w-16 bg-white border border-stone-200 p-1 rounded-md font-black text-center text-xs outline-none focus:border-emerald-500 transition-all" />
               </div>
             </div>
             {results.meats.map((m: any, idx: number) => (
-              <div key={idx} className="bg-stone-50 p-3 rounded-xl border border-stone-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
-                <span className="text-xs font-black uppercase text-stone-900 italic">{m.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black text-stone-500">R$</span>
-                  <input type="text" inputMode="decimal" defaultValue={prices[m.name]?.toString().replace('.', ',')} onBlur={(e) => updatePrice(m.name, e.target.value)} className="w-20 bg-white border border-stone-200 p-2 rounded-lg font-black text-center text-sm outline-none focus:border-emerald-500 transition-all" />
+              <div key={idx} className="bg-stone-50 p-2 rounded-lg border border-stone-100 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-stone-900 italic">{m.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black text-stone-400">R$</span>
+                  <input type="text" inputMode="decimal" defaultValue={prices[m.name]?.toString().replace('.', ',')} onBlur={(e) => updatePrice(m.name, e.target.value)} className="w-16 bg-white border border-stone-200 p-1 rounded-md font-black text-center text-xs outline-none focus:border-emerald-500 transition-all" />
                 </div>
               </div>
             ))}
@@ -192,7 +192,7 @@ const Suggestions = ({ suggestions, apply, onClose, isSearching, loadSuggestions
   };
 
   return (
-    <PanelBase title="Blends Profissionais (IA)" icon="fas fa-robot" onClose={onClose} color="text-[#ea580c]">
+    <PanelBase title={`Blends: ${currentCategory}`} icon="fas fa-robot" onClose={onClose} color="text-[#ea580c]">
       <div className="space-y-6">
         <div className="space-y-3">
           <form onSubmit={handleCustomSearch} className="relative">
@@ -464,6 +464,79 @@ const CameraOptionsModal = ({ onClose, onUpload, onOpenWebcam }: { onClose: () =
   </div>
 );
 
+const PrintLayout = ({ recipe, results, targetUnits }: any) => {
+  return (
+    <div className="print-only hidden p-4 font-serif">
+      <div className="text-center border-b-2 border-black pb-4 mb-6">
+        <h1 className="text-3xl font-black uppercase tracking-widest text-black mb-1">{recipe.name}</h1>
+        <div className="flex justify-center gap-4 text-xs font-bold uppercase text-stone-600">
+          <span>{new Date().toLocaleDateString()}</span>
+          <span>•</span>
+          <span>{results.units} Unidades</span>
+          <span>•</span>
+          <span>{recipe.unitWeight}g / unidade</span>
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-sm font-black uppercase border-b border-black mb-3 pb-1">Composição do Blend</h2>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="uppercase text-xs border-b border-stone-300">
+              <th className="py-2">Ingrediente</th>
+              <th className="py-2 text-right">Proporção</th>
+              <th className="py-2 text-right">Quantidade</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {results.meats.map((m: any, idx: number) => (
+              <tr key={idx}>
+                <td className="py-2 font-bold">{m.name}</td>
+                <td className="py-2 text-right">{(m.ratioInTotal * 100).toFixed(0)}%</td>
+                <td className="py-2 text-right font-mono">{(m.weight / 1000).toFixed(3)} kg</td>
+              </tr>
+            ))}
+            <tr className="bg-stone-50">
+              <td className="py-2 font-bold">Gordura Animal</td>
+              <td className="py-2 text-right">{(recipe.fatRatio * 100).toFixed(0)}%</td>
+              <td className="py-2 text-right font-mono">{(results.fat / 1000).toFixed(3)} kg</td>
+            </tr>
+          </tbody>
+          <tfoot className="border-t-2 border-stone-800">
+            <tr>
+              <td className="py-3 font-black uppercase">Total de Massa</td>
+              <td></td>
+              <td className="py-3 text-right font-black text-lg">{(results.total / 1000).toFixed(3)} kg</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div className="border-2 border-dashed border-stone-300 rounded-xl p-4 min-h-[150px]">
+        <h3 className="text-xs font-black uppercase text-stone-400 mb-2">Observações / Controle de Qualidade</h3>
+        <div className="space-y-6 pt-4">
+          <div className="flex justify-between border-b border-stone-200 pb-1">
+            <span className="text-xs uppercase font-bold text-stone-400">Responsável</span>
+            <span className="w-32"></span>
+          </div>
+          <div className="flex justify-between border-b border-stone-200 pb-1">
+            <span className="text-xs uppercase font-bold text-stone-400">Horário Início</span>
+            <span className="w-32"></span>
+          </div>
+          <div className="flex justify-between border-b border-stone-200 pb-1">
+            <span className="text-xs uppercase font-bold text-stone-400">Horário Término</span>
+            <span className="w-32"></span>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center mt-8 text-[8px] uppercase tracking-widest text-stone-300">
+        Burger Master Pro • Documento Interno
+      </div>
+    </div>
+  );
+};
+
 const WebcamCaptureModal = ({ onClose, onCapture }: { onClose: () => void, onCapture: (f: File) => void }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -654,6 +727,7 @@ const App: React.FC = () => {
   };
 
   const loadSuggestions = async (cat: string) => {
+    console.log("🔄 Loading suggestions for category:", cat);
     setIsSearching(true);
     setShowSuggestions(true);
     setCurrentCategory(cat);
@@ -699,7 +773,7 @@ const App: React.FC = () => {
         __html: `
         @media print {
           body { background: white !important; color: black !important; }
-          header, footer, button, input[type="range"], .no-print { display: none !important; }
+          header, footer, button, input[type="range"], .no-print, .print-hidden { display: none !important; }
           .print-only { display: block !important; }
           .max-w-7xl { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
           .grid { display: block !important; }
@@ -716,96 +790,9 @@ const App: React.FC = () => {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
-      <div className="print-only print-container p-8 max-w-[210mm] mx-auto bg-white">
-        <div className="flex justify-between items-start border-b-4 border-black pb-6 mb-8">
-          <div>
-            <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Burger Master Pro</h1>
-            <div className="flex items-center gap-3">
-              <span className="bg-black text-white px-3 py-1 text-sm font-bold uppercase tracking-widest rounded">Relatório de Produção</span>
-              <span className="text-sm font-bold text-stone-500 uppercase tracking-widest">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-black text-stone-900">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-            <p className="text-sm font-bold uppercase text-stone-500">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
-          </div>
-        </div>
+      <PrintLayout recipe={recipe} results={results} targetUnits={targetUnits} />
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div className="bg-stone-50 p-6 border-2 border-stone-200 rounded-lg">
-            <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-2">Produto</h3>
-            <p className="text-3xl font-black text-stone-900 uppercase italic leading-none mb-1">{recipe.name}</p>
-            <p className="text-sm font-bold text-stone-500 uppercase">{recipe.meats.length} Cortes • {recipe.grindMethod}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-stone-50 p-4 border-2 border-stone-200 rounded-lg text-center">
-              <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-1">Unidades</h3>
-              <p className="text-4xl font-black text-stone-900">{targetUnits}</p>
-            </div>
-            <div className="bg-stone-50 p-4 border-2 border-stone-200 rounded-lg text-center">
-              <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-1">Peso Un.</h3>
-              <p className="text-4xl font-black text-stone-900">{recipe.unitWeight}<span className="text-lg text-stone-400">g</span></p>
-            </div>
-          </div>
-        </div>
 
-        <div className="mb-8">
-          <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Composição do Blend</h3>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-stone-300">
-                <th className="py-2 text-xs font-black uppercase text-stone-500 w-1/2">Ingrediente</th>
-                <th className="py-2 text-xs font-black uppercase text-stone-500 text-right">Proporção</th>
-                <th className="py-2 text-xs font-black uppercase text-stone-500 text-right">Peso Total</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-bold text-stone-800">
-              <tr className="border-b border-stone-100">
-                <td className="py-3 uppercase flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded-full"></div> Gordura Animal</td>
-                <td className="py-3 text-right">{(recipe.fatRatio * 100).toFixed(0)}%</td>
-                <td className="py-3 text-right">{(results.fat < 1000 ? Math.round(results.fat) + 'g' : (results.fat / 1000).toFixed(3) + 'kg')}</td>
-              </tr>
-              {results.meats.map((m, i) => (
-                <tr key={i} className="border-b border-stone-100">
-                  <td className="py-3 uppercase flex items-center gap-2"><div className={`w-3 h-3 rounded-full ${i % 2 === 0 ? 'bg-red-500' : 'bg-red-700'}`}></div> {m.name}</td>
-                  <td className="py-3 text-right">{(m.ratioInTotal * 100).toFixed(0)}%</td>
-                  <td className="py-3 text-right">{(m.weight < 1000 ? Math.round(m.weight) + 'g' : (m.weight / 1000).toFixed(3) + 'kg')}</td>
-                </tr>
-              ))}
-              <tr className="bg-stone-100">
-                <td className="py-3 pl-3 font-black uppercase">Massa Total</td>
-                <td className="py-3 text-right font-black">100%</td>
-                <td className="py-3 text-right font-black pr-3">{(results.total / 1000).toFixed(3)}kg</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 mt-auto">
-          <div>
-            <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Agendamento</h3>
-            <div className="space-y-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-stone-400 block mb-1">Data de Entrega</span>
-                <div className="h-10 border-b border-stone-300 border-dashed"></div>
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase text-stone-400 block mb-1">Horário</span>
-                <div className="h-10 border-b border-stone-300 border-dashed"></div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Responsável</h3>
-            <div className="space-y-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-stone-400 block mb-1">Assinatura</span>
-                <div className="h-24 border border-stone-300 rounded bg-stone-50"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <header className="bg-[#1c1917] text-white px-4 py-3 shadow-2xl sticky top-0 z-[100] border-b border-stone-800 no-print">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">

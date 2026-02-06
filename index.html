@@ -81,39 +81,45 @@
     }
 
     @media print {
+      @page {
+        size: A5;
+        margin: 10mm;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        font-size: 10pt;
+      }
 
       header,
       footer,
       button,
       .no-print,
       input[type=range],
-      .chart-container {
+      .chart-container,
+      .print-hidden {
         display: none !important;
       }
 
-      body {
-        background-color: white !important;
-        color: black !important;
-        overflow: visible !important;
+      .print-only {
+        display: block !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: white;
       }
 
       main {
+        display: none !important;
+      }
+
+      #root {
         padding: 0 !important;
-      }
-
-      .shadow-xl,
-      .shadow-2xl {
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-      }
-
-      /* Ensure list is full width */
-      .grid {
-        display: block !important;
-      }
-
-      .bg-white {
-        background-color: white !important;
       }
     }
   </style>
