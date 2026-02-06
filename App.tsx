@@ -513,15 +513,22 @@ const FavoritesModal = ({ favorites, onLoad, onRemove, onClose }: any) => (
 const ProductionModal = ({
   onClose,
   productionDate, setProductionDate,
+  pickupTime, setPickupTime,
   butcherInstructions, setButcherInstructions,
   grillInstructions, setGrillInstructions,
   handlePrint
 }: any) => (
   <PanelBase title="Dados de Produção" icon="fas fa-clipboard-list" onClose={onClose} color="text-stone-900" maxWidth="max-w-md">
     <div className="space-y-5">
-      <div>
-        <label className="text-xs font-black text-stone-500 uppercase mb-1 block tracking-wider">Data/Hora de Produção</label>
-        <input type="datetime-local" value={productionDate} onChange={(e) => setProductionDate(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 font-bold text-sm text-stone-800 outline-none focus:border-[#ea580c] transition-all" />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-xs font-black text-stone-500 uppercase mb-1 block tracking-wider">Data de Produção</label>
+          <input type="datetime-local" value={productionDate} onChange={(e) => setProductionDate(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 font-bold text-sm text-stone-800 outline-none focus:border-[#ea580c] transition-all" />
+        </div>
+        <div>
+          <label className="text-xs font-black text-stone-500 uppercase mb-1 block tracking-wider">Horário de Retirada</label>
+          <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 font-bold text-sm text-stone-800 outline-none focus:border-[#ea580c] transition-all" />
+        </div>
       </div>
       <div>
         <label className="text-xs font-black text-stone-500 uppercase mb-1 block tracking-wider">Instruções para o Açougueiro</label>
@@ -665,6 +672,7 @@ const App: React.FC = () => {
   const [sellingPrice, setSellingPrice] = useState<number>(35.00);
 
   const [productionDate, setProductionDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
   const [butcherInstructions, setButcherInstructions] = useState("");
   const [grillInstructions, setGrillInstructions] = useState("");
   const [showProductionModal, setShowProductionModal] = useState(false);
@@ -846,139 +854,147 @@ const App: React.FC = () => {
       <style dangerouslySetInnerHTML={{
         __html: `
         @media print {
-          body { background: white !important; color: black !important; }
+          @page { size: A5; margin: 5mm; }
+          body { background: white !important; color: black !important; margin: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           header, footer, button, input[type="range"], .no-print { display: none !important; }
-          .print-only { display: block !important; }
+          .print-only { display: block !important; width: 100%; height: 100%; box-sizing: border-box; }
           .max-w-7xl { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
           .grid { display: block !important; }
           .bg-white, .bg-stone-50 { background: transparent !important; border: none !important; box-shadow: none !important; }
           .rounded-[2.5rem], .rounded-3xl { border-radius: 0 !important; }
-          .print-header { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 2px solid black; padding-bottom: 20px; margin-bottom: 30px; }
-          .print-section { margin-bottom: 40px; page-break-inside: avoid; }
-          .print-title { font-size: 24px; font-weight: 900; text-transform: uppercase; }
-          .print-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px; }
-          .print-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; }
+          .print-header { display: flex !important; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 20px; }
+          .print-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .print-section { margin-bottom: 20px; page-break-inside: avoid; }
         }
         .print-only { display: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
-      <div className="print-only print-container p-8 max-w-[210mm] mx-auto bg-white">
-        <div className="flex justify-between items-start border-b-4 border-black pb-6 mb-8">
+      <div className="print-only print-container bg-white text-black font-sans">
+        <div className="print-header">
           <div>
-            <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Burger Master Pro</h1>
-            <div className="flex items-center gap-3">
-              <span className="bg-black text-white px-3 py-1 text-sm font-bold uppercase tracking-widest rounded">Relatório de Produção</span>
-              <span className="text-sm font-bold text-stone-500 uppercase tracking-widest">ID: {productionId}</span>
+            <h1 className="text-2xl font-black uppercase italic tracking-tighter mb-1">Burger Master Pro</h1>
+            <div className="flex items-center gap-2">
+              <span className="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded">Relatório de Produção</span>
+              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">ID: {productionId}</span>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-black text-stone-900">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-            <p className="text-sm font-bold uppercase text-stone-500">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
+            <p className="text-2xl font-black text-stone-900">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+            <p className="text-[10px] font-bold uppercase text-stone-500">{new Date().toLocaleDateString('pt-BR')}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div className="bg-stone-50 p-6 border-2 border-stone-200 rounded-lg">
-            <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-2">Produto</h3>
-            <p className="text-3xl font-black text-stone-900 uppercase italic leading-none mb-1">{recipe.name}</p>
-            <p className="text-sm font-bold text-stone-500 uppercase">{recipe.meats.length} Cortes • {recipe.grindMethod}</p>
+        <div className="print-grid mb-6">
+          <div className="p-4 border border-stone-300 rounded-lg">
+            <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-1">Produto</h3>
+            <p className="text-2xl font-black text-stone-900 uppercase italic leading-none mb-1">{recipe.name}</p>
+            <p className="text-[10px] font-bold text-stone-500 uppercase">{recipe.meats.length} Cortes • {recipe.grindMethod}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-stone-50 p-4 border-2 border-stone-200 rounded-lg text-center">
-              <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-1">Unidades</h3>
-              <p className="text-4xl font-black text-stone-900">{targetUnits}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 border border-stone-300 rounded-lg text-center">
+              <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-0.5">Unidades</h3>
+              <p className="text-3xl font-black text-stone-900 leading-none">{targetUnits}</p>
             </div>
-            <div className="bg-stone-50 p-4 border-2 border-stone-200 rounded-lg text-center">
-              <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-1">Peso Un.</h3>
-              <p className="text-4xl font-black text-stone-900">{recipe.unitWeight}<span className="text-lg text-stone-400">g</span></p>
+            <div className="p-3 border border-stone-300 rounded-lg text-center">
+              <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-0.5">Peso Un.</h3>
+              <p className="text-3xl font-black text-stone-900 leading-none">{recipe.unitWeight}<span className="text-sm text-stone-400">g</span></p>
             </div>
           </div>
         </div>
 
-        <div className="mb-8">
-          <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Composição do Blend</h3>
+        <div className="mb-6">
+          <h3 className="text-[11px] font-black uppercase text-black border-b border-black pb-1 mb-3 tracking-widest">Composição do Blend</h3>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-stone-300">
-                <th className="py-2 text-xs font-black uppercase text-stone-500 w-1/2">Ingrediente</th>
-                <th className="py-2 text-xs font-black uppercase text-stone-500 text-right">Proporção</th>
-                <th className="py-2 text-xs font-black uppercase text-stone-500 text-right">Peso Total</th>
+                <th className="py-1 text-[10px] font-black uppercase text-stone-500 w-1/2">Ingrediente</th>
+                <th className="py-1 text-[10px] font-black uppercase text-stone-500 text-right">Proporção</th>
+                <th className="py-1 text-[10px] font-black uppercase text-stone-500 text-right">Peso Total</th>
               </tr>
             </thead>
-            <tbody className="text-sm font-bold text-stone-800">
+            <tbody className="text-[11px] font-bold text-stone-800">
               <tr className="border-b border-stone-100">
-                <td className="py-3 uppercase flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded-full"></div> Gordura Animal</td>
-                <td className="py-3 text-right">{(recipe.fatRatio * 100).toFixed(0)}%</td>
-                <td className="py-3 text-right">{(results.fat < 1000 ? Math.round(results.fat) + 'g' : (results.fat / 1000).toFixed(3) + 'kg')}</td>
+                <td className="py-2 uppercase flex items-center gap-2"><div className="w-2.5 h-2.5 bg-stone-300 rounded-full grayscale"></div> Gordura Animal</td>
+                <td className="py-2 text-right">{(recipe.fatRatio * 100).toFixed(0)}%</td>
+                <td className="py-2 text-right">{(results.fat < 1000 ? Math.round(results.fat) + 'g' : (results.fat / 1000).toFixed(3) + 'kg')}</td>
               </tr>
               {results.meats.map((m, i) => (
                 <tr key={i} className="border-b border-stone-100">
-                  <td className="py-3 uppercase flex items-center gap-2"><div className={`w-3 h-3 rounded-full ${i % 2 === 0 ? 'bg-red-500' : 'bg-red-700'}`}></div> {m.name}</td>
-                  <td className="py-3 text-right">{(m.ratioInTotal * 100).toFixed(0)}%</td>
-                  <td className="py-3 text-right">{(m.weight < 1000 ? Math.round(m.weight) + 'g' : (m.weight / 1000).toFixed(3) + 'kg')}</td>
+                  <td className="py-2 uppercase flex items-center gap-2"><div className={`w-2.5 h-2.5 rounded-full bg-stone-800`}></div> {m.name}</td>
+                  <td className="py-2 text-right">{(m.ratioInTotal * 100).toFixed(0)}%</td>
+                  <td className="py-2 text-right">{(m.weight < 1000 ? Math.round(m.weight) + 'g' : (m.weight / 1000).toFixed(3) + 'kg')}</td>
                 </tr>
               ))}
-              <tr className="bg-stone-100">
-                <td className="py-3 pl-3 font-black uppercase">Massa Total</td>
-                <td className="py-3 text-right font-black">100%</td>
-                <td className="py-3 text-right font-black pr-3">{(results.total / 1000).toFixed(3)}kg</td>
+              <tr className="bg-stone-50">
+                <td className="py-2 pl-2 font-black uppercase">Massa Total</td>
+                <td className="py-2 text-right font-black">100%</td>
+                <td className="py-2 text-right font-black pr-2">{(results.total / 1000).toFixed(3)}kg</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {(butcherInstructions || grillInstructions) && (
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            {butcherInstructions && (
-              <div className="bg-stone-50 p-6 border-2 border-dashed border-stone-300 rounded-lg">
-                <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-2 flex items-center gap-2"><i className="fas fa-drumstick-bite"></i> Instruções: Açougue</h3>
-                <p className="text-sm font-medium text-stone-800 whitespace-pre-wrap leading-relaxed">{butcherInstructions}</p>
-              </div>
-            )}
-            {grillInstructions && (
-              <div className="bg-stone-50 p-6 border-2 border-dashed border-stone-300 rounded-lg">
-                <h3 className="text-xs font-black uppercase text-stone-400 tracking-widest mb-2 flex items-center gap-2"><i className="fas fa-fire"></i> Instruções: Chapa</h3>
-                <p className="text-sm font-medium text-stone-800 whitespace-pre-wrap leading-relaxed">{grillInstructions}</p>
+        <div className="print-grid mb-6">
+          <div className="p-4 border border-stone-300 rounded-lg min-h-[100px] flex flex-col">
+            <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-2 flex items-center gap-1"><i className="fas fa-drumstick-bite"></i> Instruções: Açougue</h3>
+            {butcherInstructions ? (
+              <p className="text-[11px] font-medium text-stone-800 whitespace-pre-wrap leading-relaxed">{butcherInstructions}</p>
+            ) : (
+              <div className="flex-1 flex flex-col gap-3 pt-1">
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
               </div>
             )}
           </div>
-        )}
+          <div className="p-4 border border-stone-300 rounded-lg min-h-[100px] flex flex-col">
+            <h3 className="text-[10px] font-black uppercase text-stone-400 tracking-widest mb-2 flex items-center gap-1"><i className="fas fa-fire"></i> Instruções: Chapa</h3>
+            {grillInstructions ? (
+              <p className="text-[11px] font-medium text-stone-800 whitespace-pre-wrap leading-relaxed">{grillInstructions}</p>
+            ) : (
+              <div className="flex-1 flex flex-col gap-3 pt-1">
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
+                <div className="border-b border-stone-300 border-dashed h-4"></div>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <div className="grid grid-cols-2 gap-8 mt-auto">
+        <div className="print-grid mt-auto">
           <div>
-            <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Agendamento</h3>
-            <div className="space-y-4">
+            <h3 className="text-[11px] font-black uppercase text-black border-b border-black pb-1 mb-3 tracking-widest">Agendamento</h3>
+            <div className="space-y-3">
               <div>
-                <span className="text-xs font-bold uppercase text-stone-400 block mb-1">Data de Entrega</span>
+                <span className="text-[9px] font-bold uppercase text-stone-400 block mb-0.5">Data de Entrega</span>
                 {productionDate ? (
-                  <div className="text-lg font-black text-stone-900 border-b-2 border-stone-900 pb-1">
-                    {new Date(productionDate).toLocaleString('pt-BR')}
+                  <div className="text-sm font-black text-stone-900 border-b border-stone-900 pb-0.5">
+                    {new Date(productionDate).toLocaleDateString('pt-BR')}
                   </div>
                 ) : (
-                  <div className="h-10 border-b border-stone-300 border-dashed"></div>
+                  <div className="h-6 border-b border-stone-300 border-dashed"></div>
                 )}
               </div>
               <div>
-                <span className="text-xs font-bold uppercase text-stone-400 block mb-1">Horário</span>
-                {productionDate ? (
-                  <div className="text-lg font-black text-stone-900 border-b-2 border-stone-900 pb-1">
-                    {/* Horário included in locale string above, simplified */}
-                    Define na Data
+                <span className="text-[9px] font-bold uppercase text-stone-400 block mb-0.5">Horário de Retirada</span>
+                {pickupTime ? (
+                  <div className="text-sm font-black text-stone-900 border-b border-stone-900 pb-0.5">
+                    {pickupTime}
                   </div>
                 ) : (
-                  <div className="h-10 border-b border-stone-300 border-dashed"></div>
+                  <div className="h-6 border-b border-stone-300 border-dashed"></div>
                 )}
               </div>
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-black uppercase text-black border-b-2 border-black pb-2 mb-4 tracking-widest">Responsável</h3>
-            <div className="space-y-4">
+            <h3 className="text-[11px] font-black uppercase text-black border-b border-black pb-1 mb-3 tracking-widest">Responsável</h3>
+            <div className="space-y-3">
               <div>
-                <span className="text-xs font-bold uppercase text-stone-400 block mb-1">Assinatura</span>
-                <div className="h-24 border border-stone-300 rounded bg-stone-50"></div>
+                <span className="text-[9px] font-bold uppercase text-stone-400 block mb-0.5">Assinatura</span>
+                <div className="h-16 border border-stone-300 rounded bg-stone-50"></div>
               </div>
             </div>
           </div>
@@ -1217,6 +1233,7 @@ const App: React.FC = () => {
           <ProductionModal
             onClose={() => setShowProductionModal(false)}
             productionDate={productionDate} setProductionDate={setProductionDate}
+            pickupTime={pickupTime} setPickupTime={setPickupTime}
             butcherInstructions={butcherInstructions} setButcherInstructions={setButcherInstructions}
             grillInstructions={grillInstructions} setGrillInstructions={setGrillInstructions}
             handlePrint={() => { setShowProductionModal(false); setTimeout(() => window.print(), 100); }}
