@@ -734,9 +734,9 @@ const App: React.FC = () => {
     try {
       const data = await searchProfessionalBlends(cat);
       setSuggestions(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Erro na pesquisa. Verifique sua conexão ou tente novamente.");
+      alert(`Erro: ${error.message || "Falha desconhecida"}`);
     } finally { setIsSearching(false); }
   };
 
