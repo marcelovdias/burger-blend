@@ -3,6 +3,7 @@ import { extractRecipeFromImage, searchProfessionalBlends } from './services/gem
 import { Recipe, CalculationResult, SuggestedBlend, BurgerSize, MeatComponent } from './types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { BURGER_SIZES, BLEND_CATEGORIES } from './src/constants';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 const DEFAULT_RECIPE: Recipe = {
   name: 'Alamo Blend Original',
@@ -538,6 +539,17 @@ const WebcamCaptureModal = ({ onClose, onCapture }: { onClose: () => void, onCap
 };
 
 const App: React.FC = () => {
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      // @ts-ignore
+      if (r) setInterval(() => r.update(), 60 * 60 * 1000)
+    }
+  });
+
   const [recipe, setRecipe] = useState<Recipe>(DEFAULT_RECIPE);
   const [targetUnits, setTargetUnits] = useState<number>(30);
   const [targetWeight, setTargetWeight] = useState<number>(4200);
@@ -1060,6 +1072,23 @@ const App: React.FC = () => {
       <footer className="print-none mt-12 py-8 text-center border-t border-stone-200">
         <p className="text-[10px] uppercase tracking-widest font-bold text-stone-400">Burger Master Pro © 2024</p>
       </footer>
+
+      {needRefresh && (
+        <div className="fixed bottom-4 right-4 z-[200] bg-stone-900 text-white p-4 rounded-xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom duration-300 border border-stone-700 max-w-xs">
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black uppercase text-[#ea580c] tracking-widest mb-0.5">Atualização</span>
+            <span className="text-xs font-bold leading-tight">Nova versão disponível. Clique para recarregar.</span>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => updateServiceWorker(true)} className="bg-[#ea580c] text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-lg">
+              Atualizar
+            </button>
+            <button onClick={() => setNeedRefresh(false)} className="text-stone-500 hover:text-white transition-colors px-2">
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
