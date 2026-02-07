@@ -7,11 +7,11 @@ const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const cleanJsonString = (text: string) => {
   // Remove marcadores de markdown comuns (```json, ```)
   let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-  
+
   // Tenta encontrar o início e fim do JSON (objeto ou array) para ignorar textos extras
   const jsonStartBrace = cleaned.indexOf('{');
   const jsonStartBracket = cleaned.indexOf('[');
-  
+
   // Define onde começa o JSON (seja array ou objeto)
   let jsonStart = -1;
   if (jsonStartBrace !== -1 && jsonStartBracket !== -1) {
@@ -69,30 +69,44 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
   console.log("🚀 Iniciando busca REAL na web por:", query);
 
-  const prompt = `Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
+  // Prompt ajustado para buscar tendências reais e trazer mais resultados
+  const prompt = `Atue como um caçador de tendências gastronômicas e especialista em hambúrgueres. 
+  Pesquise na web por "melhores blends de hambúrguer ${query}", "burger blend trends 2024 2025" e receitas de hamburguerias famosas.
   
-  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends.
+  Liste as 15 receitas mais relevantes encontradas (tendências atuais ou clássicos famosos).
+  Para cada uma, estime a composição técnica do blend baseada nas descrições encontradas na pesquisa.
   
-  Retorne APENAS o JSON puro com este formato (sem markdown):
+  Retorne APENAS um array JSON puro. Não use Markdown. O formato deve ser EXATAMENTE este:
   [
     {
-      "name": "Nome (ex: Vencedor Burger Fest SP)",
-      "description": "Descrição baseada na notícia encontrada",
+      "name": "Nome do Burger ou Restaurante",
+      "description": "Breve descrição (ex: 'Tendência Smash de NY' ou 'Clássico do restaurante X')",
       "fatRatio": 0.20,
-      "meats": [{"name": "Carne A", "ratio": 0.5}, {"name": "Carne B", "ratio": 0.5}]
+      "meats": [
+        {"name": "Peito", "ratio": 0.5},
+        {"name": "Acém", "ratio": 0.5}
+      ]
     }
-  ]`;
+  ]
+  
+  REGRAS:
+  1. "fatRatio" deve ser um número entre 0.15 e 0.30.
+  2. A soma dos "ratio" dentro de "meats" deve ser SEMPRE 1.0 (ex: 0.5 + 0.5 ou 0.33 + 0.33 + 0.34).
+  3. SEM explicações antes ou depois do JSON. Apenas o array cru.`;
 
   try {
-    if (!API_KEY) throw new Error("API Key missing");
+    if (!API_KEY) {
+      console.error("❌ API Key não encontrada! Verifique o .env.");
+      throw new Error("API Key missing");
+    }
 
-    // MUDANÇA 1: Usando gemini-2.0-flash (Mais confiável para Tools/Busca)
+    // Usando gemini-2.0-flash (Mais confiável para Tools/Busca)
     const response = await fetch(`${BASE_URL}/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // MUDANÇA 2: Configuração explícita para FORÇAR a busca (threshold 0.0 obriga a busca)
+        // Configuração explícita para FORÇAR a busca (threshold 0.0 obriga a busca)
         tools: [
           {
             google_search_retrieval: {
@@ -105,13 +119,12 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
         }
       })
     });
 
     if (!response.ok) {
-      // Se der 404 de novo, é sinal que sua API Key não tem acesso a busca ou ao modelo 2.0
       const errorText = await response.text();
       console.error("❌ Erro API:", errorText);
       throw new Error(errorText);
@@ -129,10 +142,12 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    console.log("📝 Texto extraído (início):", text.substring(0, 100) + "...");
+
     return JSON.parse(cleanJsonString(text));
 
   } catch (error) {
-    console.error("🔥 Erro:", error);
+    console.error("🔥 Falha na busca ou no processamento do JSON:", error);
     return [];
   }
 };
