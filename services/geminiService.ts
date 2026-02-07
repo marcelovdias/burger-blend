@@ -52,22 +52,10 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
   console.log("🚀 Iniciando busca REAL com Gemini 1.5 Flash por:", query);
 
-  const categoryPrompts: Record<string, string> = {
-    "Clássicos": "hambúrgueres clássicos famosos receitas tradicionais",
-    "Smash": "melhores receitas smash burger american cheese onions",
-    "Premium (Angus/Wagyu)": "receitas burger premium angus wagyu gourmet premiados",
-    "Custo-Benefício": "blend hambúrguer custo benefício lucrativo acém peito",
-    "Exóticos": "hambúrguer blends exóticos carnes diferentes misturas inusitadas"
-  };
-
-  const searchTerm = categoryPrompts[query] || `hambúrgueres tendência ${query} 2025`;
-
   // Prompt completo para busca na web
-  const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "${searchTerm}" e "melhores blends de hambúrguer ${query}".
+  const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
   
-  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 15 blends reais para garantir variedade.
-  
-  Se não encontrar 15 tendências novas, COMPLETE a lista com cl´assicos consagrados ou variações famosas dessa categoria ("${query}").
+  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends reais.
   
   Retorne APENAS o JSON puro com este formato (sem markdown):
   [
@@ -77,12 +65,7 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
       "fatRatio": 0.20,
       "meats": [{"name": "Carne A", "ratio": 0.5}, {"name": "Carne B", "ratio": 0.5}]
     }
-  ]
-  
-  REGRAS:
-  1. O arquivo deve ter PELO MENOS 10 itens.
-  2. "fatRatio" entre 0.15 e 0.30.
-  3. Soma dos ratios das carnes = 1.0.`;
+  ]`;
 
   try {
     if (!API_KEY) throw new Error("API Key missing");
@@ -98,7 +81,7 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 4096,
         }
       })
     });
@@ -117,11 +100,7 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-    const result = JSON.parse(cleanJsonString(text));
-
-    // Fallback: Se retornou menos de 10, duplica alguns para preencher a UI (temporário)
-    // Na prática o prompt deve garantir, mas isso evita UI vazia
-    return result;
+    return JSON.parse(cleanJsonString(text));
 
   } catch (error) {
     console.error("🔥 Erro na busca:", error);
