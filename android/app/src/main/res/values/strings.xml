@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Burger Master Pro</string>
+    <string name="title_activity_main">Burger Master Pro</string>
+    <string name="package_name">com.burgermaster.pro</string>
+    <string name="custom_url_scheme">com.burgermaster.pro</string>
+</resources>

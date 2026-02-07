@@ -595,6 +595,48 @@ const WebcamCaptureModal = ({ onClose, onCapture }: { onClose: () => void, onCap
   );
 };
 
+const FavoritesModal = ({ favorites, onSaveCurrent, onLoad, onDelete, onClose }: any) => (
+  <PanelBase title="Meus Favoritos" icon="fas fa-heart" onClose={onClose} color="text-pink-500">
+    <div className="space-y-6">
+      <button onClick={onSaveCurrent} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-pink-600 transition shadow-lg shadow-pink-200 flex items-center justify-center gap-2">
+        <i className="fas fa-plus-circle text-lg"></i> Salvar Receita Atual
+      </button>
+
+      <div className="space-y-3">
+        <h4 className="text-[9px] font-black text-stone-400 uppercase tracking-widest pl-1">Salvos ({favorites.length})</h4>
+        <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
+          {favorites.length === 0 ? (
+            <div className="text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+              <i className="fas fa-heart-broken text-stone-300 text-2xl mb-2"></i>
+              <p className="text-stone-400 text-[10px] font-bold uppercase">Nenhum favorito salvo.</p>
+            </div>
+          ) : (
+            favorites.map((fav: any, idx: number) => (
+              <div key={idx} className="bg-white p-4 rounded-2xl border border-stone-100 shadow-sm flex justify-between items-center group hover:border-pink-200 transition-all">
+                <div>
+                  <h5 className="font-black text-[11px] text-stone-900 leading-tight mb-0.5">{fav.name}</h5>
+                  <div className="flex gap-2">
+                    <span className="text-[8px] font-black text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded uppercase">{fav.meats.length} cortes</span>
+                    <span className="text-[8px] font-black text-pink-500 bg-pink-50 px-1.5 py-0.5 rounded uppercase">{(fav.fatRatio * 100).toFixed(0)}% FAT</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => onLoad(fav)} className="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center hover:bg-[#ea580c] hover:text-white transition shadow-sm active:scale-90" title="Carregar">
+                    <i className="fas fa-upload text-xs"></i>
+                  </button>
+                  <button onClick={() => onDelete(idx)} className="w-9 h-9 rounded-xl bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition shadow-sm active:scale-90" title="Excluir">
+                    <i className="fas fa-trash-alt text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  </PanelBase>
+);
+
 const App: React.FC = () => {
   const [recipe, setRecipe] = useState<Recipe>(DEFAULT_RECIPE);
   const [targetUnits, setTargetUnits] = useState<number>(30);
@@ -617,6 +659,10 @@ const App: React.FC = () => {
   const [showCosts, setShowCosts] = useState(false);
   const [meatPrices, setMeatPrices] = useState<Record<string, number>>({ 'Gordura Animal': 15.00 });
   const [sellingPrice, setSellingPrice] = useState<number>(35.00);
+
+  // New State for Favorites
+  const [favorites, setFavorites] = useState<Recipe[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -655,10 +701,12 @@ const App: React.FC = () => {
     const savedUnits = localStorage.getItem('burger-master-units');
     const savedPrices = localStorage.getItem('burger-master-prices');
     const savedSellingPrice = localStorage.getItem('burger-master-selling-price');
+    const savedFavorites = localStorage.getItem('burger-master-favorites');
     if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
     if (savedUnits) setTargetUnits(parseInt(savedUnits));
     if (savedPrices) setMeatPrices(JSON.parse(savedPrices));
     if (savedSellingPrice) setSellingPrice(parseFloat(savedSellingPrice));
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
   }, []);
 
   useEffect(() => {
@@ -666,8 +714,31 @@ const App: React.FC = () => {
     localStorage.setItem('burger-master-units', targetUnits.toString());
     localStorage.setItem('burger-master-prices', JSON.stringify(meatPrices));
     localStorage.setItem('burger-master-selling-price', sellingPrice.toString());
+    localStorage.setItem('burger-master-favorites', JSON.stringify(favorites));
     setTargetWeight(targetUnits * recipe.unitWeight);
-  }, [recipe, targetUnits, meatPrices, sellingPrice]);
+  }, [recipe, targetUnits, meatPrices, sellingPrice, favorites]);
+
+  const handleSaveFavorite = () => {
+    const exists = favorites.some(f => f.name === recipe.name && JSON.stringify(f.meats) === JSON.stringify(recipe.meats));
+    if (exists) {
+      alert("Esta receita já está nos seus favoritos!");
+      return;
+    }
+    const newFavorites = [recipe, ...favorites];
+    setFavorites(newFavorites);
+  };
+
+  const handleDeleteFavorite = (index: number) => {
+    const newFavorites = favorites.filter((_, i) => i !== index);
+    setFavorites(newFavorites);
+  };
+
+  const handleLoadFavorite = (fav: Recipe) => {
+    if (window.confirm(`Carregar "${fav.name}"? As alterações atuais não salvas serão perdidas.`)) {
+      setRecipe(fav);
+      setShowFavorites(false);
+    }
+  };
 
   const results = useMemo((): CalculationResult => {
     const fatWeight = targetWeight * recipe.fatRatio;
@@ -815,6 +886,14 @@ const App: React.FC = () => {
             >
               <i className="fas fa-search text-[#f97316]"></i>
               <span className="hidden xs:inline-block">Explorar</span>
+            </button>
+
+            <button
+              onClick={() => setShowFavorites(true)}
+              className="bg-[#262626] text-white px-3 sm:px-4 py-2 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 border border-stone-700 hover:bg-stone-800 transition-all active:scale-95 flex-shrink-0"
+            >
+              <i className="fas fa-heart text-pink-500"></i>
+              <span className="hidden xs:inline-block">Favoritos</span>
             </button>
 
             <button
@@ -1009,6 +1088,7 @@ const App: React.FC = () => {
         {showCare && <CareModal onClose={() => setShowCare(false)} />}
         {showDIY && <DIYModal onClose={() => setShowDIY(false)} />}
         {showCosts && <CostsModal results={results} prices={meatPrices} setPrices={setMeatPrices} costResults={costResults} sellingPrice={sellingPrice} setSellingPrice={setSellingPrice} onClose={() => setShowCosts(false)} />}
+        {showFavorites && <FavoritesModal favorites={favorites} onSaveCurrent={handleSaveFavorite} onLoad={handleLoadFavorite} onDelete={handleDeleteFavorite} onClose={() => setShowFavorites(false)} />}
         {isProcessing && <ProcessingOverlay />}
       </main>
 

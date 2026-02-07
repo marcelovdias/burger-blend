@@ -1,4 +1,4 @@
-import { BurgerSize } from './types';
+import { BurgerSize } from '../types';
 
 export const BURGER_SIZES: BurgerSize[] = [
   { id: 'smash-s', label: 'Ultra Smash', weight: 60, description: 'Crocante e fino', icon: 'fas fa-dot-circle' },
@@ -14,5 +14,5 @@ export const BURGER_SIZES: BurgerSize[] = [
 ];
 
 export const BLEND_CATEGORIES = [
-  "Clássicos", "Smash", "Premium (Angus/Wagyu)", "Custo-Benefício", "Exóticos"
+  "Clássicos", "Smash", "Premium (Angus/Wagyu)", "Custo-Benefício", "Famosos (Brasil/Mundo)"
 ];

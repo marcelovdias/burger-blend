@@ -7,11 +7,11 @@ const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const cleanJsonString = (text: string) => {
   // Remove marcadores de markdown comuns (```json, ```)
   let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-  
+
   // Tenta encontrar o início e fim do JSON (objeto ou array) para ignorar textos extras
   const jsonStartBrace = cleaned.indexOf('{');
   const jsonStartBracket = cleaned.indexOf('[');
-  
+
   // Define onde começa o JSON (seja array ou objeto)
   let jsonStart = -1;
   if (jsonStartBrace !== -1 && jsonStartBracket !== -1) {
@@ -66,8 +66,26 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   return JSON.parse(cleanJsonString(text));
 };
 
+
+import { LOCAL_BLENDS } from "../src/data/blends";
+
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca REAL na web por:", query);
+  console.log("🚀 Iniciando busca por:", query);
+
+  // 1. Tenta buscar no banco de dados local primeiro (Curadoria)
+  // Normaliza a query para comparar com as chaves (remove acentos, lowercase, etc se necessário)
+  // Aqui faremos uma comparação direta por enquanto ou includes
+  const localKey = Object.keys(LOCAL_BLENDS).find(key =>
+    query.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(query.toLowerCase())
+  );
+
+  if (localKey) {
+    console.log(`📚 Encontrado no banco local: ${localKey}`);
+    // Simula um delay para não parecer "quebrado" de tão rápido, ou retorna instantâneo
+    return LOCAL_BLENDS[localKey];
+  }
+
+  console.log("🤖 Buscando na IA (Gemini)...");
 
   // Prompt ajustado para buscar tendências reais e trazer mais resultados
   const prompt = `Atue como um caçador de tendências gastronômicas e especialista em hambúrgueres. 
@@ -100,8 +118,6 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
       throw new Error("API Key missing");
     }
 
-    console.log("📡 Enviando requisição com Google Search...");
-    
     // ATUALIZADO: Usando gemini-2.5-flash com ferramenta de busca
     const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
@@ -130,21 +146,22 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
     }
 
     const data = await response.json();
-    
+
     // Extração segura do texto
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     console.log("📝 Texto extraído (início):", text.substring(0, 100) + "...");
 
     const cleanedText = cleanJsonString(text);
     const blends: SuggestedBlend[] = JSON.parse(cleanedText);
-    
+
     console.log(`✅ ${blends.length} blends encontrados e processados.`);
 
     return blends;
 
   } catch (error) {
     console.error("🔥 Falha na busca ou no processamento do JSON:", error);
-    // Retorna array vazio para não quebrar a UI
-    return [];
+    // Fallback: Se a API falhar, tenta retornar algo local genérico ou vazio
+    const fallback = LOCAL_BLENDS["Clássicos"] || [];
+    return fallback;
   }
 };
