@@ -32,8 +32,8 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  // Modelo Gemini 1.5 Flash (Estável)
-  const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+  // FIX: Usando a versão ESPECÍFICA 002 (Mais estável que o alias genérico)
+  const response = await fetch(`${BASE_URL}/gemini-1.5-flash-002:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -61,7 +61,7 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca com Gemini 1.5 Flash por:", query);
+  console.log("🚀 Iniciando busca com Gemini 1.5 Flash-002 por:", query);
 
   const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
   
@@ -80,7 +80,8 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+    // FIX: Alterado para gemini-1.5-flash-002
+    const response = await fetch(`${BASE_URL}/gemini-1.5-flash-002:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
