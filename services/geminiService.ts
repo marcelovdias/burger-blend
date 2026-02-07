@@ -36,8 +36,8 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   // Remove o header do base64 se existir (data:image/jpeg;base64,...)
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  // ATUALIZADO: Usando gemini-2.5-flash
-  const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+ // PARA:
+const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -86,8 +86,11 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    // MUDANÇA 1: Usando gemini-2.0-flash (Mais confiável para Tools/Busca)
-    const response = await fetch(`${BASE_URL}/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+    // DE:
+// const response = await fetch(`${BASE_URL}/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+
+// PARA (Use esta versão):
+    const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
