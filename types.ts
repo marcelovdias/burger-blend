@@ -13,6 +13,7 @@ export interface BurgerSize {
 }
 
 export interface Recipe {
+  id?: string;
   name: string;
   fatRatio: number; // Proporção de gordura no total do blend (ex: 0.2 para 20%)
   meats: MeatComponent[];
