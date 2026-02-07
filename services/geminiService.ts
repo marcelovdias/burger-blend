@@ -26,8 +26,8 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   if (!API_KEY) throw new Error("API Key missing");
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  // VOLTANDO PARA O 1.5 FLASH (Melhor e mais estável para JSON)
-  const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+  // MUDANÇA: Usando Gemini 2.5 Flash (O modelo que sua conta possui)
+  const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -50,13 +50,9 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca REAL com Gemini 1.5 Flash por:", query);
+  console.log("🚀 Iniciando busca com Gemini 2.5 Flash por:", query);
 
-  // Prompt completo para busca na web
   const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
-  
-  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends reais.
-  
   Retorne APENAS o JSON puro com este formato (sem markdown):
   [
     {
@@ -70,12 +66,13 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+    // MUDANÇA: Usando Gemini 2.5 Flash
+    const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // FERRAMENTA DE BUSCA REATIVADA (Agora funciona na conta nova!)
+        // Ferramenta de busca ativada para o 2.5
         tools: [
           { google_search: {} }
         ],
@@ -92,13 +89,6 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
       throw new Error(errorText);
     }
     const data = await response.json();
-
-    // Log para confirmar que a busca aconteceu
-    const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
-    if (groundingMetadata?.searchEntryPoint) {
-      console.log("✅ CONFIRMADO: O Google Search foi acionado com sucesso!");
-    }
-
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     return JSON.parse(cleanJsonString(text));
 
