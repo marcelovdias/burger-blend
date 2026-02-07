@@ -5,14 +5,11 @@ const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // Função utilitária para limpar a resposta e garantir JSON válido
 const cleanJsonString = (text: string) => {
-  // Remove marcadores de markdown comuns (```json, ```)
   let cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
   
-  // Tenta encontrar o início e fim do JSON (objeto ou array) para ignorar textos extras
   const jsonStartBrace = cleaned.indexOf('{');
   const jsonStartBracket = cleaned.indexOf('[');
   
-  // Define onde começa o JSON (seja array ou objeto)
   let jsonStart = -1;
   if (jsonStartBrace !== -1 && jsonStartBracket !== -1) {
     jsonStart = Math.min(jsonStartBrace, jsonStartBracket);
@@ -33,11 +30,10 @@ const cleanJsonString = (text: string) => {
 export const extractRecipeFromImage = async (base64Image: string): Promise<Recipe> => {
   if (!API_KEY) throw new Error("API Key missing");
 
-  // Remove o header do base64 se existir (data:image/jpeg;base64,...)
   const imageData = base64Image.split(',')[1] || base64Image;
 
- // PARA:
-const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+  // Usando gemini-1.5-flash (Estável e Gratuito)
+  const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -49,8 +45,6 @@ const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=$
       }],
       generationConfig: {
         temperature: 0.4,
-        topK: 32,
-        topP: 1,
         maxOutputTokens: 2048,
       }
     })
@@ -69,9 +63,9 @@ const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=$
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
   console.log("🚀 Iniciando busca REAL na web por:", query);
 
-  const prompt = `Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
+  const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
   
-  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends.
+  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends reais.
   
   Retorne APENAS o JSON puro com este formato (sem markdown):
   [
@@ -81,30 +75,25 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
       "fatRatio": 0.20,
       "meats": [{"name": "Carne A", "ratio": 0.5}, {"name": "Carne B", "ratio": 0.5}]
     }
-  ]`;
+  ]
+  
+  REGRAS:
+  1. Soma dos ratios deve ser 1.0.
+  2. Sem texto adicional, apenas JSON.`;
 
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    // DE:
-// const response = await fetch(`${BASE_URL}/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
-
-// PARA (Use esta versão):
+    // CONFIGURAÇÃO CORRETA PARA PLANO GRATUITO:
+    // 1. Modelo: gemini-1.5-flash (sem sufixos como -latest)
+    // 2. Tools: Formato simplificado { google_search: {} }
     const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // MUDANÇA 2: Configuração explícita para FORÇAR a busca (threshold 0.0 obriga a busca)
         tools: [
-          {
-            google_search_retrieval: {
-              dynamic_retrieval_config: {
-                mode: "MODE_DYNAMIC",
-                dynamic_threshold: 0.0 // 0.0 força a busca sempre que possível
-              }
-            }
-          }
+          { google_search: {} } // Sintaxe simples compatível com 1.5 Flash
         ],
         generationConfig: {
           temperature: 0.7,
@@ -114,7 +103,6 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
     });
 
     if (!response.ok) {
-      // Se der 404 de novo, é sinal que sua API Key não tem acesso a busca ou ao modelo 2.0
       const errorText = await response.text();
       console.error("❌ Erro API:", errorText);
       throw new Error(errorText);
@@ -122,20 +110,17 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
 
     const data = await response.json();
 
-    // LOG DE DEPURAÇÃO: Verifica se a busca realmente aconteceu
+    // Verificação se a busca aconteceu
     const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
     if (groundingMetadata?.searchEntryPoint) {
       console.log("✅ CONFIRMADO: O Google Search foi acionado!");
-      console.log("🔍 Fontes consultadas:", groundingMetadata.groundingChunks?.length || 0);
-    } else {
-      console.warn("⚠️ AVISO: A API retornou resposta, mas NÃO usou o Google Search (Grounding).");
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     return JSON.parse(cleanJsonString(text));
 
   } catch (error) {
-    console.error("🔥 Erro:", error);
+    console.error("🔥 Erro na busca:", error);
     return [];
   }
 };
