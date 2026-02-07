@@ -179,7 +179,7 @@ const CostsModal = ({ results, prices, setPrices, costResults, sellingPrice, set
   );
 };
 
-const Suggestions = ({ suggestions, apply, onClose, isSearching, loadSuggestions, currentCategory, customSearchQuery, setCustomSearchQuery }: any) => {
+const Suggestions = ({ suggestions, apply, onClose, isSearching, loadSuggestions, currentCategory, customSearchQuery, setCustomSearchQuery, favorites, toggleFavorite }: any) => {
   const allCitations = useMemo(() => {
     const unique = new Map();
     suggestions.forEach(s => s.citations?.forEach(c => unique.set(c.uri, c)));
@@ -226,8 +226,11 @@ const Suggestions = ({ suggestions, apply, onClose, isSearching, loadSuggestions
             <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {suggestions.map((s: any, idx: number) => (
-                  <div key={idx} onClick={() => apply(s)} className="group bg-stone-50 p-4 rounded-2xl border border-stone-100 hover:border-[#ea580c] hover:bg-white cursor-pointer transition-all hover:shadow-lg">
-                    <div className="flex justify-between items-start mb-2">
+                  <div key={idx} onClick={() => apply(s)} className="group bg-stone-50 p-4 rounded-2xl border border-stone-100 hover:border-[#ea580c] hover:bg-white cursor-pointer transition-all hover:shadow-lg relative">
+                    <button onClick={(e) => { e.stopPropagation(); toggleFavorite(s); }} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm z-10 transition-all hover:scale-110">
+                      <i className={`${favorites.some((f: any) => f.name === s.name) ? "fas text-red-500" : "far text-stone-300 hover:text-red-400"} fa-heart text-xs`}></i>
+                    </button>
+                    <div className="flex justify-between items-start mb-2 pr-8">
                       <h4 className="font-black text-[10px] text-stone-900 group-hover:text-[#ea580c] transition-colors leading-tight">{s.name}</h4>
                       <span className="text-[7px] font-black text-[#ea580c] bg-orange-50 px-2 py-0.5 rounded-md">{(s.fatRatio * 100).toFixed(0)}% FAT</span>
                     </div>
@@ -434,6 +437,38 @@ const InstallGuide = ({ onClose }: any) => (
   </PanelBase>
 );
 
+const FavoritesList = ({ favorites, apply, remove, onClose }: any) => (
+  <PanelBase title="Meus Favoritos" icon="fas fa-heart" onClose={onClose} color="text-red-500">
+    {favorites.length === 0 ? (
+      <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
+        <i className="far fa-heart text-stone-200 text-4xl mb-1"></i>
+        <h4 className="font-black text-[10px] uppercase text-stone-600 italic">Nenhum favorito salvo</h4>
+        <p className="text-[9px] text-stone-400">Salve seus blends preferidos na aba Explorar.</p>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {favorites.map((s: SuggestedBlend, idx: number) => (
+          <div key={idx} className="group bg-stone-50 p-4 rounded-2xl border border-stone-100 hover:border-red-500 hover:bg-white transition-all hover:shadow-lg relative">
+            <button onClick={(e) => { e.stopPropagation(); remove(s); }} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white text-stone-300 hover:text-red-500 flex items-center justify-center shadow-sm z-10 transition-colors">
+              <i className="fas fa-trash-alt text-xs"></i>
+            </button>
+            <div onClick={() => apply(s)} className="cursor-pointer">
+              <div className="flex justify-between items-start mb-2 pr-8">
+                <h4 className="font-black text-[10px] text-stone-900 group-hover:text-red-500 transition-colors leading-tight">{s.name}</h4>
+              </div>
+              <div className="flex gap-2 mb-2">
+                <span className="text-[7px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-md">{(s.fatRatio * 100).toFixed(0)}% FAT</span>
+                <span className="text-[7px] font-black text-stone-400 bg-stone-100 px-2 py-0.5 rounded-md">{new Date().toLocaleDateString()}</span>
+              </div>
+              <p className="text-[9px] text-stone-500 line-clamp-2 italic font-medium leading-relaxed">"{s.description}"</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </PanelBase>
+);
+
 const ProcessingOverlay = () => (
   <div className="fixed inset-0 z-[150] flex flex-col items-center justify-center bg-black/90 backdrop-blur-2xl">
     <div className="w-12 h-12 border-4 border-[#ea580c]/20 border-t-[#ea580c] rounded-full animate-spin mb-4"></div>
@@ -617,6 +652,8 @@ const App: React.FC = () => {
   const [showCosts, setShowCosts] = useState(false);
   const [meatPrices, setMeatPrices] = useState<Record<string, number>>({ 'Gordura Animal': 15.00 });
   const [sellingPrice, setSellingPrice] = useState<number>(35.00);
+  const [favorites, setFavorites] = useState<SuggestedBlend[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -655,10 +692,12 @@ const App: React.FC = () => {
     const savedUnits = localStorage.getItem('burger-master-units');
     const savedPrices = localStorage.getItem('burger-master-prices');
     const savedSellingPrice = localStorage.getItem('burger-master-selling-price');
+    const savedFavorites = localStorage.getItem('burger-master-favorites');
     if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
     if (savedUnits) setTargetUnits(parseInt(savedUnits));
     if (savedPrices) setMeatPrices(JSON.parse(savedPrices));
     if (savedSellingPrice) setSellingPrice(parseFloat(savedSellingPrice));
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
   }, []);
 
   useEffect(() => {
@@ -666,8 +705,9 @@ const App: React.FC = () => {
     localStorage.setItem('burger-master-units', targetUnits.toString());
     localStorage.setItem('burger-master-prices', JSON.stringify(meatPrices));
     localStorage.setItem('burger-master-selling-price', sellingPrice.toString());
+    localStorage.setItem('burger-master-favorites', JSON.stringify(favorites));
     setTargetWeight(targetUnits * recipe.unitWeight);
-  }, [recipe, targetUnits, meatPrices, sellingPrice]);
+  }, [recipe, targetUnits, meatPrices, sellingPrice, favorites]);
 
   const results = useMemo((): CalculationResult => {
     const fatWeight = targetWeight * recipe.fatRatio;
@@ -738,6 +778,15 @@ const App: React.FC = () => {
       console.error(error);
       alert(`Erro: ${error.message || "Falha desconhecida"}`);
     } finally { setIsSearching(false); }
+  };
+
+  const toggleFavorite = (blend: SuggestedBlend) => {
+    const exists = favorites.find(f => f.name === blend.name);
+    if (exists) {
+      setFavorites(prev => prev.filter(f => f.name !== blend.name));
+    } else {
+      setFavorites(prev => [...prev, { ...blend, id: Date.now().toString() }]);
+    }
   };
 
   const applySuggestion = (suggestion: SuggestedBlend) => {
@@ -831,6 +880,13 @@ const App: React.FC = () => {
               title="Enciclopédia Burger"
             >
               <i className="fas fa-book-open text-sm"></i>
+            </button>
+            <button onClick={() => setShowGuide(true)} className="p-2 text-stone-400 hover:text-white transition-colors" title="Ajuda">
+              <i className="far fa-question-circle"></i>
+            </button>
+            <button onClick={() => setShowFavorites(true)} className="p-2 text-stone-400 hover:text-red-500 transition-colors relative" title="Favoritos">
+              <i className="fas fa-heart"></i>
+              {favorites.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>}
             </button>
           </div>
         </div>
@@ -985,8 +1041,20 @@ const App: React.FC = () => {
             currentCategory={currentCategory}
             customSearchQuery={customSearchQuery}
             setCustomSearchQuery={setCustomSearchQuery}
+            favorites={favorites}
+            toggleFavorite={toggleFavorite}
           />
         )}
+
+        {showFavorites && (
+          <FavoritesList
+            favorites={favorites}
+            apply={(s: SuggestedBlend) => { applySuggestion(s); setShowFavorites(false); }}
+            remove={(s: SuggestedBlend) => toggleFavorite(s)}
+            onClose={() => setShowFavorites(false)}
+          />
+        )}
+
         {showGuide && <Manual onClose={() => setShowGuide(false)} />}
         {showInstallGuide && <InstallGuide onClose={() => setShowInstallGuide(false)} />}
 

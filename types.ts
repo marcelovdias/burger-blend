@@ -28,6 +28,7 @@ export interface CalculationResult {
 }
 
 export interface SuggestedBlend {
+  id?: string;
   name: string;
   description: string;
   fatRatio: number;
