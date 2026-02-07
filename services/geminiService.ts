@@ -26,8 +26,8 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   if (!API_KEY) throw new Error("API Key missing");
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  // USANDO O LITE (Você tem cota disponível)
-  const response = await fetch(`${BASE_URL}/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`, {
+  // VOLTANDO PARA O 1.5 FLASH (Melhor e mais estável para JSON)
+  const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -50,15 +50,18 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca com Gemini 2.5 Flash Lite por:", query);
+  console.log("🚀 Iniciando busca REAL com Gemini 1.5 Flash por:", query);
 
-  // Prompt simplificado para o Lite (sem ferramenta de busca por enquanto para garantir funcionamento)
-  const prompt = `Atue como especialista em hambúrgueres. Liste 5 blends de hambúrgueres tendência para "${query}" em 2025.
-  Retorne APENAS o JSON puro com este formato:
+  // Prompt completo para busca na web
+  const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
+  
+  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends reais.
+  
+  Retorne APENAS o JSON puro com este formato (sem markdown):
   [
     {
-      "name": "Nome Criativo",
-      "description": "Descrição breve",
+      "name": "Nome (ex: Vencedor Burger Fest SP)",
+      "description": "Descrição baseada na notícia encontrada",
       "fatRatio": 0.20,
       "meats": [{"name": "Carne A", "ratio": 0.5}, {"name": "Carne B", "ratio": 0.5}]
     }
@@ -67,14 +70,19 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    // USANDO O LITE (Você tem cota disponível)
-    const response = await fetch(`${BASE_URL}/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`, {
+    const response = await fetch(`${BASE_URL}/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // Removi 'tools' temporariamente pois o Lite pode não suportar ou gastar cota extra
-        generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
+        // FERRAMENTA DE BUSCA REATIVADA (Agora funciona na conta nova!)
+        tools: [
+          { google_search: {} }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+        }
       })
     });
 
@@ -84,6 +92,13 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
       throw new Error(errorText);
     }
     const data = await response.json();
+
+    // Log para confirmar que a busca aconteceu
+    const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
+    if (groundingMetadata?.searchEntryPoint) {
+      console.log("✅ CONFIRMADO: O Google Search foi acionado com sucesso!");
+    }
+
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     return JSON.parse(cleanJsonString(text));
 
