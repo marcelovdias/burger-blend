@@ -262,14 +262,67 @@ const Suggestions = ({ suggestions, apply, onClose, isSearching, loadSuggestions
 
 const Manual = ({ onClose }: any) => (
   <PanelBase title="Dicas de Elite" icon="fas fa-lightbulb" onClose={onClose} color="text-amber-500">
-    <div className="space-y-4 text-xs font-medium text-stone-700 leading-relaxed">
-      <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 space-y-3">
-        <p><strong>Gordura:</strong> Use Peito ou Costela. Evite gordura de rim, que derrete muito rápido e altera o sabor.</p>
-        <p><strong>Temperatura:</strong> Moer carne gelada (próximo a 0°C) evita que a gordura se separe das fibras, mantendo a emulsão.</p>
-        <p><strong>Manuseio:</strong> Molde rapidamente. Quanto menos contato manual, menos calor você transfere para a gordura.</p>
-        <p><strong>Descanso:</strong> A carne precisa relaxar após a moagem. Deixe os burgers moldados na geladeira por 30m antes de ir para o fogo.</p>
-        <p><strong>Sal:</strong> Jamais misture sal no blend antes de moldar (vamonos virar quibe!). Salgue apenas por fora, segundos antes de entrar na chapa.</p>
-      </div>
+    <div className="space-y-6 text-xs font-medium text-stone-700 leading-relaxed">
+
+      {/* Seção 1: Blend */}
+      <section className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+        <h4 className="font-black text-[10px] uppercase text-amber-900 mb-2 flex items-center gap-1.5">
+          <i className="fas fa-drumstick-bite"></i> 1. O Blend de Carnes
+        </h4>
+        <ul className="space-y-2 list-disc pl-4 text-[9px] text-stone-600">
+          <li><strong>Proporção Ideal:</strong> 20% de gordura é o padrão ouro para suculência.</li>
+          <li><strong>Cortes:</strong> Use cortes do dianteiro (Acém, Peito, Pescoço) para mais sabor e custo menor.</li>
+          <li><strong>Mix:</strong> Evite carnes nobres sozinhas (como picanha). Misture cortes para criar complexidade.</li>
+        </ul>
+      </section>
+
+      {/* Seção 2: Moagem */}
+      <section className="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+        <h4 className="font-black text-[10px] uppercase text-stone-900 mb-2 flex items-center gap-1.5">
+          <i className="fas fa-cogs"></i> 2. Moagem e Textura
+        </h4>
+        <ul className="space-y-2 list-disc pl-4 text-[9px] text-stone-600">
+          <li><strong>Moagem Dupla:</strong> Moa carne e gordura juntas 2x para misturar sem manipular demais.</li>
+          <li><strong>Temperatura:</strong> Mantenha a carne próxima de 0°C para a gordura não "empastar".</li>
+          <li><strong>Disco:</strong> Prefira discos médios. Moagem muito fina deixa o burger compacto demais.</li>
+        </ul>
+      </section>
+
+      {/* Seção 3: Moldagem */}
+      <section className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+        <h4 className="font-black text-[10px] uppercase text-amber-900 mb-2 flex items-center gap-1.5">
+          <i className="fas fa-hand-holding"></i> 3. Moldagem e Peso
+        </h4>
+        <ul className="space-y-2 list-disc pl-4 text-[9px] text-stone-600">
+          <li><strong>Pesos:</strong> 160g-180g para burgers altos, 60g-90g para smash.</li>
+          <li><strong>Dica do Furo:</strong> Em burgers altos, pressione o centro com o polegar para não estufar.</li>
+          <li><strong>Pureza:</strong> Nunca use ovo, cebola ou farinha na massa. Apenas carne e gordura.</li>
+        </ul>
+      </section>
+
+      {/* Seção 4: Preparo */}
+      <section className="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+        <h4 className="font-black text-[10px] uppercase text-stone-900 mb-2 flex items-center gap-1.5">
+          <i className="fas fa-fire"></i> 4. Na Chapa
+        </h4>
+        <ul className="space-y-2 list-disc pl-4 text-[9px] text-stone-600">
+          <li><strong>Maillard:</strong> Chapa "pelando" para criar a crosta marrom de sabor.</li>
+          <li><strong>Não Aperte:</strong> Jamais esprema o burger (exceto ao fazer o smash inicial).</li>
+          <li><strong>Selagem:</strong> Sele o pão com manteiga para impermeabilizá-lo contra os sucos.</li>
+        </ul>
+      </section>
+
+      {/* Seção 5: Finalização */}
+      <section className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+        <h4 className="font-black text-[10px] uppercase text-amber-900 mb-2 flex items-center gap-1.5">
+          <i className="fas fa-check-circle"></i> 5. O Descanso
+        </h4>
+        <p className="text-[9px] text-stone-600">
+          Deixe a carne descansar <strong>30 a 60 segundos</strong> antes de servir. Isso redistribui os sucos e evita que o pão encharque na primeira mordida.
+        </p>
+      </section>
+
+      <button onClick={onClose} className="w-full bg-stone-100 text-stone-500 py-4 rounded-xl font-black uppercase tracking-widest text-[9px]">Fechar</button>
     </div>
   </PanelBase>
 );
