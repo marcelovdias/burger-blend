@@ -72,7 +72,7 @@ export const searchProfessionalBlends = async (query: string = "clássicos"): Pr
 
   try {
     if (!API_KEY) {
-      console.error("❌ API Key não encontrada! Verifique o .env ou as configurações do Netlify.");
+      console.error("❌ API Key não encontrada! Verifique o .env.");
       throw new Error("API Key missing");
     }
 
