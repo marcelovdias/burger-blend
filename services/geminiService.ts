@@ -26,7 +26,7 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
   if (!API_KEY) throw new Error("API Key missing");
   const imageData = base64Image.split(',')[1] || base64Image;
 
-  // MUDANÇA: Usando Gemini 2.5 Flash (O modelo que sua conta possui)
+  // ATUALIZADO: Usando Gemini 2.5 Flash (Confirmado na sua lista)
   const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,14 +50,15 @@ export const extractRecipeFromImage = async (base64Image: string): Promise<Recip
 };
 
 export const searchProfessionalBlends = async (query: string = "tendências"): Promise<SuggestedBlend[]> => {
-  console.log("🚀 Iniciando busca com Gemini 2.5 Flash por:", query);
+  console.log("🚀 Iniciando busca com Gemini 2.5 Flash...");
 
   const prompt = `Atue como um caçador de tendências gastronômicas. Pesquise na web agora por "hambúrgueres tendência ${query} 2025" e "melhores blends de hambúrguer premiados recentes".
-  Retorne APENAS o JSON puro com este formato (sem markdown):
+  Com base nos RESULTADOS DA PESQUISA, monte uma lista técnica de 10 blends reais.
+  Retorne APENAS o JSON puro com este formato:
   [
     {
-      "name": "Nome (ex: Vencedor Burger Fest SP)",
-      "description": "Descrição baseada na notícia encontrada",
+      "name": "Nome do Blend",
+      "description": "Descrição breve",
       "fatRatio": 0.20,
       "meats": [{"name": "Carne A", "ratio": 0.5}, {"name": "Carne B", "ratio": 0.5}]
     }
@@ -66,20 +67,17 @@ export const searchProfessionalBlends = async (query: string = "tendências"): P
   try {
     if (!API_KEY) throw new Error("API Key missing");
 
-    // MUDANÇA: Usando Gemini 2.5 Flash
+    // ATUALIZADO: Usando Gemini 2.5 Flash
     const response = await fetch(`${BASE_URL}/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // Ferramenta de busca ativada para o 2.5
+        // Tenta usar a busca. Se der erro no 2.5, removeremos esta parte 'tools'
         tools: [
           { google_search: {} }
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-        }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
       })
     });
 
